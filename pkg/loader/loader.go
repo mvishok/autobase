@@ -3,6 +3,7 @@ package loader
 import (
 	"encoding/json"
 	"os"
+	"path"
 	"statix/pkg/core/memory"
 	"statix/pkg/log"
 )
@@ -15,9 +16,12 @@ func readJson(filename string, v interface{}) error {
 	return json.Unmarshal(fileData, v)
 }
 
-func LoadConfig(path string) map[string]interface{} {
+func LoadConfig(filePath string) map[string]interface{} {
+	log.Info("Loading config file: " + filePath)
+
+	filePath = path.Join(memory.Get("dir").(string), filePath)
 	var config interface{}
-	err := readJson(path, &config)
+	err := readJson(filePath, &config)
 	if err != nil {
 		// Handle the error
 		log.Error("Failed to read config file: " + err.Error())
@@ -35,6 +39,13 @@ func LoadConfig(path string) map[string]interface{} {
 	if configMap["dir"] == nil {
 		log.Error("No dir set in config")
 		os.Exit(1)
+	} else {
+		configMap["dir"] = path.Join(path.Dir(filePath), configMap["dir"].(string)) //resolve the path
+
+		if _, err := os.Stat(configMap["dir"].(string)); os.IsNotExist(err) {
+			log.Error("Directory does not exist: " + configMap["dir"].(string))
+			os.Exit(1)
+		}
 	}
 
 	disableLogging, ok := configMap["disableLogging"].(bool)
@@ -53,8 +64,6 @@ func LoadConfig(path string) map[string]interface{} {
 		configMap["port"] = 8081
 		log.Warning("Port not set in config, defaulting to 8081")
 	}
-
-	memory.Append("test", 12) //REMOVE
 
 	return configMap
 }
