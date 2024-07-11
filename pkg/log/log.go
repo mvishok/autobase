@@ -12,25 +12,25 @@ var enabled = true
 
 func Info(message string) {
 	if enabled {
-		fmt.Println(blue + "INFO:" + message + reset)
+		fmt.Println(blue + "INFO: " + message + reset)
 	}
 }
 
 func Error(message string) {
 	if enabled {
-		fmt.Println(red + "ERROR:" + message + reset)
+		fmt.Println(red + "ERROR: " + message + reset)
 	}
 }
 
 func Success(message string) {
 	if enabled {
-		fmt.Println(green + "SUCCESS:" + message + reset)
+		fmt.Println(green + "SUCCESS: " + message + reset)
 	}
 }
 
 func Warning(message string) {
 	if enabled {
-		fmt.Println(yellow + "WARNING:" + message + reset)
+		fmt.Println(yellow + "WARNING: " + message + reset)
 	}
 }
 
