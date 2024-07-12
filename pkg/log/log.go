@@ -1,36 +1,34 @@
 package log
 
-import "fmt"
+import (
+	"fmt"
 
-const blue = "\033[34m"
-const red = "\033[31m"
-const green = "\033[32m"
-const yellow = "\033[33m"
-const reset = "\033[0m"
+	"github.com/TwiN/go-color"
+)
 
 var enabled = true
 
 func Info(message string) {
 	if enabled {
-		fmt.Println(blue + "INFO: " + message + reset)
+		fmt.Println(color.InCyan("INFO: " + message))
 	}
 }
 
 func Error(message string) {
 	if enabled {
-		fmt.Println(red + "ERROR: " + message + reset)
+		fmt.Println(color.InBold(color.InRed("ERROR: " + message)))
 	}
 }
 
 func Success(message string) {
 	if enabled {
-		fmt.Println(green + "SUCCESS: " + message + reset)
+		fmt.Println(color.InBold(color.InGreen("SUCCESS: " + message)))
 	}
 }
 
 func Warning(message string) {
 	if enabled {
-		fmt.Println(yellow + "WARNING: " + message + reset)
+		fmt.Println(color.InYellow("WARNING: " + message))
 	}
 }
 
