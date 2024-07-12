@@ -4,9 +4,14 @@ import (
 	"encoding/json"
 	"os"
 	"path"
-	"statix/pkg/core/memory"
-	"statix/pkg/log"
+	"path/filepath"
+	"syncengin/pkg/core/memory"
+	"syncengin/pkg/log"
 )
+
+func normalize(fpath string) string { //normalize the path
+	return path.Clean(filepath.ToSlash(fpath))
+}
 
 func readJson(filename string, v interface{}) error {
 	fileData, err := os.ReadFile(filename)
@@ -19,7 +24,7 @@ func readJson(filename string, v interface{}) error {
 func LoadConfig(filePath string) map[string]interface{} {
 	log.Info("Loading config file: " + filePath)
 
-	filePath = path.Join(memory.Get("dir").(string), filePath)
+	filePath = normalize(path.Join(memory.Get("dir").(string), filePath))
 	var config interface{}
 	err := readJson(filePath, &config)
 	if err != nil {
@@ -40,7 +45,7 @@ func LoadConfig(filePath string) map[string]interface{} {
 		log.Error("No dir set in config")
 		os.Exit(1)
 	} else {
-		configMap["dir"] = path.Join(path.Dir(filePath), configMap["dir"].(string)) //resolve the path
+		configMap["dir"] = normalize(path.Join(path.Dir(filePath), configMap["dir"].(string))) //resolve the path
 
 		if _, err := os.Stat(configMap["dir"].(string)); os.IsNotExist(err) {
 			log.Error("Directory does not exist: " + configMap["dir"].(string))
