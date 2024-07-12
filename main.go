@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path"
-	"statix/pkg/core/memory"
-	"statix/pkg/core/query"
-	"statix/pkg/loader"
-	"statix/pkg/log"
+	"syncengin/pkg/core/memory"
+	"syncengin/pkg/core/query"
+	"syncengin/pkg/loader"
+	"syncengin/pkg/log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -17,8 +18,11 @@ import (
 var config map[string]interface{}
 
 func main() {
-
 	start := time.Now()
+
+	gin.SetMode(gin.ReleaseMode)
+	gin.DefaultWriter = io.Discard
+
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Error("Failed to get current working directory: " + err.Error())
@@ -37,7 +41,6 @@ func main() {
 }
 
 func routes(router *gin.Engine) {
-	fmt.Println(memory.Get("test")) //REMOVE
 	router.GET("*path", handleRequest)
 }
 
@@ -49,7 +52,7 @@ func handleRequest(c *gin.Context) {
 	log.Info("GET " + requestPath)
 
 	if requestPath[len(requestPath)-1] == '/' {
-		requestPath = requestPath[:len(requestPath)-1] + "index.csv"
+		requestPath = requestPath[:len(requestPath)-1] + "/index.csv"
 	} else {
 		requestPath = requestPath + ".csv"
 	}
@@ -60,19 +63,23 @@ func handleRequest(c *gin.Context) {
 	if _, err := os.Stat(csvPath); os.IsNotExist(err) {
 		log.Error("The requested endpoint " + c.Param("path") + " -> " + requestPath + " does not exist")
 		c.JSON(http.StatusNotFound, gin.H{"error": "The requested endpoint does not exist"})
+		return
 	} else if err != nil {
 		log.Error("An error occurred while checking the path: " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
+	}
+	rows, err := loader.ReadCSV(csvPath)
+	if err != nil {
+		log.Error("An error occurred while reading the CSV file: " + err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 	} else {
-		rows, err := loader.ReadCSV(csvPath)
-		if err != nil {
-			log.Error("An error occurred while reading the CSV file: " + err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
-		} else {
-			response := query.Run(rows, requestQuery)
-			c.JSON(http.StatusOK, response)
+		response := query.Run(rows, requestQuery)
+		if len(response) == 0 {
+			response = []map[string]string{}
 		}
+		c.JSON(http.StatusOK, response)
 	}
 
-	log.Info(fmt.Sprintf("GET %v took %v", c.Param("path"), time.Since(requestStart)))
+	log.Success(fmt.Sprintf("GET %v took %v", c.Param("path"), time.Since(requestStart)))
 }
