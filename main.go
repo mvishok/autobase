@@ -34,6 +34,11 @@ func main() {
 		memory.Append("dir", dir)
 	}
 
+	if len(os.Args) < 2 {
+		log.Error("No config file provided")
+		os.Exit(1)
+	}
+
 	config = loader.LoadConfig(os.Args[1])
 	loadAPIKeys()
 	router := gin.Default()
