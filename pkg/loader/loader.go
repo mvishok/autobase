@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"syncengin/pkg/core/memory"
 	"syncengin/pkg/log"
+
+	"github.com/joho/godotenv"
 )
 
 func normalize(fpath string) string { //normalize the path
@@ -68,6 +70,21 @@ func LoadConfig(filePath string) map[string]interface{} {
 	if configMap["port"] == nil {
 		configMap["port"] = 8081
 		log.Warning("Port not set in config, defaulting to 8081")
+	}
+
+	//if env is set in config, load the env file
+	if configMap["env"] != nil {
+		envFilePath := normalize(path.Join(path.Dir(filePath), configMap["env"].(string)))
+		if _, err := os.Stat(envFilePath); os.IsNotExist(err) {
+			log.Error("Env file does not exist: " + envFilePath)
+			os.Exit(1)
+		}
+
+		err := godotenv.Load(envFilePath)
+		if err != nil {
+			log.Error("Error loading env file: " + err.Error())
+			os.Exit(1)
+		}
 	}
 
 	return configMap
