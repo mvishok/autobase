@@ -5,9 +5,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syncengin/pkg/log"
 )
 
-func Run(rows [][]string, query url.Values) []map[string]string {
+func Run(rows [][]string, query url.Values, access_level string) []map[string]string {
 	if len(rows) < 2 {
 		return nil
 	}
@@ -25,7 +26,17 @@ func Run(rows [][]string, query url.Values) []map[string]string {
 		}
 	}
 
-	results = selectFields(results, query.Get("select"))
+	//if it is select query
+	if query.Get("select") != "" {
+		if access_level == "read" || access_level == "write" {
+			results = selectFields(results, query.Get("select"))
+		}
+	} else {
+		//return empty
+		log.Error("Unkown query type")
+		return []map[string]string{}
+	}
+
 	results = orderBy(results, query.Get("order"))
 
 	return results
