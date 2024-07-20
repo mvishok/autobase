@@ -3,8 +3,8 @@ package loader
 import (
 	"encoding/csv"
 	"os"
-	"syncengin/pkg/log"
 	"strings"
+	"syncengin/pkg/log"
 )
 
 func ReadCSV(filePath string) ([][]string, error) {
@@ -45,4 +45,31 @@ func ReadCSV(filePath string) ([][]string, error) {
 	}
 
 	return filteredRows, nil
+}
+
+func UpdateCSV(filePath string, rows [][]string) error {
+	log.Info("Updating CSV file: " + filePath)
+
+	//check if the file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		log.Error("File does not exist: " + filePath)
+		return err
+	}
+
+	//open the file
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil {
+		log.Error("An error occurred while opening the file: " + err.Error())
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	err = writer.WriteAll(rows)
+	if err != nil {
+		log.Error("An error occurred while writing to the file: " + err.Error())
+		return err
+	}
+
+	return nil
 }
