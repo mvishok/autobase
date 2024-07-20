@@ -79,18 +79,16 @@ func handleRequest(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
-	rows, err := loader.ReadCSV(csvPath)
-	if err != nil {
-		log.Error("An error occurred while reading the CSV file: " + err.Error())
+
+	response := query.Run(csvPath, requestQuery, c.GetString("access_level"))
+	if response == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
-	} else {
-		response := query.Run(rows, requestQuery, c.GetString("access_level"))
-		if len(response) == 0 {
-			response = []map[string]string{}
-		}
-		c.JSON(http.StatusOK, response)
 	}
 
+	if len(response) == 0 {
+		response = []map[string]string{}
+	}
+	c.JSON(http.StatusOK, response)
 	log.Success(fmt.Sprintf("GET %v took %v", c.Param("path"), time.Since(requestStart)))
 }
 
