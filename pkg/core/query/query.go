@@ -37,7 +37,7 @@ func Run(csvPath string, query url.Values, access_level string) []map[string]str
 	}
 
 	//if select query, return only selected columns
-	if query.Get("select") != "" {
+	if query.Get("select") != "" && (access_level == "read" || access_level == "") {
 
 		cols := strings.Split(query.Get("select"), ",")
 
@@ -56,6 +56,41 @@ func Run(csvPath string, query url.Values, access_level string) []map[string]str
 				results = append(results, result)
 			}
 		}
+	}
+
+	//if update query, update the rows
+	if query.Get("update") != "" && (access_level == "write" || access_level == "") {
+		cols := strings.Split(query.Get("update"), ",")
+		for i, row := range rows {
+			if i == 0 {
+				headers = row
+				continue
+			}
+			if whereClause(row, query) {
+
+				//syntax: ?update=key:newValue,key2:newValue2...
+				for _, col := range cols {
+					parts := strings.Split(col, ":")
+					if len(parts) != 2 {
+						return nil
+					}
+					key := parts[0]
+					newValue := parts[1]
+					index := getHeaderIndex(key)
+					if index == -1 {
+						return nil
+					}
+					rows[i][index] = newValue
+
+					result := make(map[string]string)
+					for i, value := range row {
+						result[rows[0][i]] = value
+					}
+					results = append(results, result)
+				}
+			}
+		}
+		loader.UpdateCSV(csvPath, rows)
 	}
 
 	return results
@@ -100,7 +135,28 @@ func whereClause(row []string, query url.Values) bool {
 						if row[index] != val {
 							return false
 						}
+					case "ne":
+						if row[index] == val {
+							return false
+						}
+					case "gt":
+						if row[index] <= val {
+							return false
+						}
+					case "lt":
+						if row[index] >= val {
+							return false
+						}
+					case "ge":
+						if row[index] < val {
+							return false
+						}
+					case "le":
+						if row[index] > val {
+							return false
+						}
 					default:
+						log.Warning("Invalid operator: " + op)
 						return false
 					}
 				}
