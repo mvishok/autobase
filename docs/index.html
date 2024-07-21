@@ -6,8 +6,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta name="description" content="Description">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
-
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
+  <link rel="icon" href="favicon.svg" sizes="any" type="image/svg+xml">
   <style>
     ::-webkit-scrollbar {
       width: 6px;
@@ -22,6 +22,10 @@
       background-color: rgba(0, 0, 0, 0.1);
     }
 
+    :root {
+      --theme-color: #3eaf7c;
+    }
+
   </style>
 </head>
 <body>
@@ -29,10 +33,17 @@
   <script>
     window.$docsify = {
       name: 'Autobase Docs',
-      repo: 'https://github.com/mvishok/autobase'
+      repo: 'https://github.com/mvishok/autobase',
+      loadSidebar: true,
+      subMaxLevel: 2,
+      'flexible-alerts': {
+        style: 'flat'
+      }
     }
   </script>
   <!-- Docsify v4 -->
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  <script src="https://unpkg.com/docsify-plugin-flexible-alerts"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
 </body>
 </html>
