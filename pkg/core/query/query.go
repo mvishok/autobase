@@ -3,8 +3,8 @@ package query
 import (
 	"net/url"
 	"strings"
-	"syncengin/pkg/loader"
-	"syncengin/pkg/log"
+	"autobase/pkg/loader"
+	"autobase/pkg/log"
 )
 
 var headers []string

@@ -5,8 +5,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"syncengin/pkg/core/memory"
-	"syncengin/pkg/log"
+	"autobase/pkg/core/memory"
+	"autobase/pkg/log"
 
 	"github.com/joho/godotenv"
 )

@@ -1,4 +1,4 @@
-module syncengin
+module autobase
 
 go 1.22.5
 

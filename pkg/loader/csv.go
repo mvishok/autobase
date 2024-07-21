@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"os"
 	"strings"
-	"syncengin/pkg/log"
+	"autobase/pkg/log"
 )
 
 func ReadCSV(filePath string) ([][]string, error) {
