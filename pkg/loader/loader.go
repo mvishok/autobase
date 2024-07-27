@@ -1,12 +1,11 @@
 package loader
 
 import (
+	"autobase/pkg/log"
 	"encoding/json"
 	"os"
 	"path"
 	"path/filepath"
-	"autobase/pkg/core/memory"
-	"autobase/pkg/log"
 
 	"github.com/joho/godotenv"
 )
@@ -26,14 +25,20 @@ func readJson(filename string, v interface{}) error {
 func LoadConfig(filePath string) map[string]interface{} {
 	log.Info("Loading config file: " + filePath)
 
-	filePath = normalize(path.Join(memory.Get("dir").(string), filePath))
+	abs, absErr := filepath.Abs(filePath)
+	if absErr != nil {
+		log.Error("Failed to get absolute path: " + absErr.Error())
+		os.Exit(1)
+	}
+
+	filePath = normalize(abs)
+
 	var config interface{}
 	err := readJson(filePath, &config)
 	if err != nil {
 		// Handle the error
 		log.Error("Failed to read config file: " + err.Error())
-		// Return an empty map
-		return make(map[string]interface{})
+		os.Exit(1)
 	}
 
 	configMap, ok := config.(map[string]interface{})
