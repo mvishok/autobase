@@ -9,14 +9,28 @@ import (
 
 var headers []string
 
-func Run(csvPath string, query url.Values, access_level string) []map[string]string {
+type Response struct {
+	Status string              `json:"status"`
+	Count  int                 `json:"count,omitempty"`
+	Data   []map[string]string `json:"data,omitempty"`
+	Error  string              `json:"error,omitempty"`
+}
+
+func Run(csvPath string, query url.Values, access_level string) Response {
 	rows, err := loader.ReadCSV(csvPath)
 	if err != nil {
 		log.Error("An error occurred while reading the CSV file: " + err.Error())
-		return nil
+		return Response{
+			Status: "error",
+			Error:  "Internal server error",
+		}
 	}
-	if len(rows) < 2 {
-		return nil
+	if len(rows) < 1 {
+		log.Error("No columns defined in CSV file")
+		return Response{
+			Status: "error",
+			Error:  "Internal server error",
+		}
 	}
 
 	results := []map[string]string{}
@@ -33,13 +47,24 @@ func Run(csvPath string, query url.Values, access_level string) []map[string]str
 			}
 			results = append(results, result)
 		}
-		return results
+		return Response{
+			Status: "success",
+			Count:  len(results) - 1,
+			Data:   results,
+		}
 	}
 
 	//if select query, return only selected columns
 	if query.Get("select") != "" && (access_level == "read" || access_level == "") {
 
 		cols := strings.Split(query.Get("select"), ",")
+
+		for _, col := range cols {
+			if col == "*" {
+				cols = append(rows[0], cols...)
+				break
+			}
+		}
 
 		for i, row := range rows {
 			if i == 0 {
@@ -55,6 +80,12 @@ func Run(csvPath string, query url.Values, access_level string) []map[string]str
 				}
 				results = append(results, result)
 			}
+		}
+
+		return Response{
+			Status: "success",
+			Count:  len(results),
+			Data:   results,
 		}
 	}
 
@@ -72,13 +103,20 @@ func Run(csvPath string, query url.Values, access_level string) []map[string]str
 				for _, col := range cols {
 					parts := strings.Split(col, ":")
 					if len(parts) != 2 {
-						return nil
+						log.Error("Invalid update syntax: " + col)
+						return Response{
+							Status: "ClientError",
+							Error:  "Invalid update syntax",
+						}
 					}
 					key := parts[0]
 					newValue := parts[1]
 					index := getHeaderIndex(key)
 					if index == -1 {
-						return nil
+						return Response{
+							Status: "ClientError",
+							Error:  "Invalid column name",
+						}
 					}
 					rows[i][index] = newValue
 
@@ -91,6 +129,11 @@ func Run(csvPath string, query url.Values, access_level string) []map[string]str
 			}
 		}
 		loader.UpdateCSV(csvPath, rows)
+		return Response{
+			Status: "success",
+			Count:  len(rows) - len(results),
+			Data:   results,
+		}
 	}
 
 	//if insert query, insert a new row
@@ -98,20 +141,24 @@ func Run(csvPath string, query url.Values, access_level string) []map[string]str
 		newRow := strings.Split(query.Get("insert"), ",")
 		if len(newRow) != len(rows[0]) {
 			log.Error("Invalid number of columns")
-			return []map[string]string{
-				{"status": "error"},
-				{"message": "Invalid number of columns"},
+			return Response{
+				Status: "ClientError",
+				Error:  "Invalid number of columns",
 			}
 		}
 		rows = append(rows, newRow)
 		loader.UpdateCSV(csvPath, rows)
-		results = append(results, map[string]string{
-			"status": "success",
-			"row":    strings.Join(newRow, ","),
-		})
+		return Response{
+			Status: "success",
+			Count:  1,
+		}
 	}
 
-	return results
+	//if none of the above, return error
+	return Response{
+		Status: "ClientError",
+		Error:  "Invalid query",
+	}
 }
 
 func contains(arr []string, str string) bool {
