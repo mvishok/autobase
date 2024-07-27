@@ -1,10 +1,10 @@
 package query
 
 import (
-	"net/url"
-	"strings"
 	"autobase/pkg/loader"
 	"autobase/pkg/log"
+	"net/url"
+	"strings"
 )
 
 var headers []string
@@ -91,6 +91,24 @@ func Run(csvPath string, query url.Values, access_level string) []map[string]str
 			}
 		}
 		loader.UpdateCSV(csvPath, rows)
+	}
+
+	//if insert query, insert a new row
+	if query.Get("insert") != "" && (access_level == "write" || access_level == "") {
+		newRow := strings.Split(query.Get("insert"), ",")
+		if len(newRow) != len(rows[0]) {
+			log.Error("Invalid number of columns")
+			return []map[string]string{
+				{"status": "error"},
+				{"message": "Invalid number of columns"},
+			}
+		}
+		rows = append(rows, newRow)
+		loader.UpdateCSV(csvPath, rows)
+		results = append(results, map[string]string{
+			"status": "success",
+			"row":    strings.Join(newRow, ","),
+		})
 	}
 
 	return results
