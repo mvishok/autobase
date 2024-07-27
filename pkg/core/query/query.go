@@ -154,6 +154,26 @@ func Run(csvPath string, query url.Values, access_level string) Response {
 		}
 	}
 
+	//if delete query, delete the rows
+	if query.Get("delete") == "true" && (access_level == "write" || access_level == "") {
+		var newRows [][]string
+		for i, row := range rows {
+			if i == 0 {
+				headers = row
+				newRows = append(newRows, row) // Always keep the header
+				continue
+			}
+			if !whereClause(row, query) {
+				newRows = append(newRows, row)
+			}
+		}
+		loader.UpdateCSV(csvPath, newRows)
+		return Response{
+			Status: "success",
+			Count:  len(rows) - len(newRows),
+		}
+	}
+
 	//if none of the above, return error
 	return Response{
 		Status: "ClientError",
