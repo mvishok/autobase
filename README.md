@@ -7,7 +7,7 @@
 A runtime engine powering data integration and serves as an API middleware
 <br/>
 <br/>
-<a href=""><strong>Explore the docs »</strong></a>
+<a href="https://autobase.vishok.me/docs"><strong>Explore the docs »</strong></a>
 <br/>
 <br/>
 </div>
