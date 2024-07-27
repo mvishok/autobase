@@ -1,6 +1,10 @@
 package main
 
 import (
+	"autobase/pkg/core/memory"
+	"autobase/pkg/core/query"
+	"autobase/pkg/loader"
+	"autobase/pkg/log"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,10 +12,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"autobase/pkg/core/memory"
-	"autobase/pkg/core/query"
-	"autobase/pkg/loader"
-	"autobase/pkg/log"
 	"time"
 
 	"github.com/gin-gonic/gin"
