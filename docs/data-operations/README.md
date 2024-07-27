@@ -12,6 +12,10 @@ These operations can be performed on the data sources by specifying the operatio
 
 The `SELECT` operation is used to retrieve specific fields from the data source. The `SELECT` operation is similar to the `SELECT` statement in SQL.
 
+### Wildcard
+
+The `*` wildcard can be used to select all columns from the data source.
+
 ### Syntax
 
 ```http
@@ -26,6 +30,28 @@ The `UPDATE` operation is used to update the data in the data source. In the `UP
 
 ```http
 update=field1:value1,field2:value2,...
+```
+
+## INSERT
+
+The `INSERT` operation is used to insert new data into the data source. In the `INSERT` operation, you have to specify the values for all the fields in the data source, as the `INSERT` operation does not support partial insertion.
+
+The order of the values should be the same as the order of the fields in the data source.
+
+### Syntax
+
+```http
+insert=value1,value2,...
+```
+
+## DELETE
+
+The `DELETE` operation is used to delete data from the data source. To delete data from the data source, you have to set the `DELETE` parameter to `true` in the query string.
+
+### Syntax
+
+```http
+delete=true&where=field1:eq:value1,...
 ```
 
 ## WHERE
