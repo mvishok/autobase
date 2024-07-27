@@ -20,6 +20,13 @@ import (
 var config map[string]interface{}
 var keys map[string]string
 
+type Response struct {
+	Status string              `json:"status"`
+	Count  int                 `json:"count,omitempty"`
+	Data   []map[string]string `json:"data,omitempty"`
+	Error  string              `json:"error,omitempty"`
+}
+
 func main() {
 	start := time.Now()
 
@@ -81,15 +88,15 @@ func handleRequest(c *gin.Context) {
 	}
 
 	response := query.Run(csvPath, requestQuery, c.GetString("access_level"))
-	if response == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
-	}
 
-	if len(response) == 0 {
-		response = []map[string]string{}
+	if response.Status == "error" {
+		c.JSON(http.StatusInternalServerError, response)
+	} else if response.Status == "ClientError" {
+		c.JSON(http.StatusBadRequest, response)
+	} else {
+		c.JSON(http.StatusOK, response)
+		log.Success(fmt.Sprintf("GET %v took %v", c.Param("path"), time.Since(requestStart)))
 	}
-	c.JSON(http.StatusOK, response)
-	log.Success(fmt.Sprintf("GET %v took %v", c.Param("path"), time.Since(requestStart)))
 }
 
 func loadAPIKeys() {
