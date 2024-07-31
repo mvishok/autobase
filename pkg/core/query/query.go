@@ -8,6 +8,8 @@ import (
 )
 
 var headers []string
+var indexMap = make(map[string][]string)
+var primaryKey int = -1
 
 type Response struct {
 	Status string              `json:"status"`
@@ -54,6 +56,28 @@ func Run(csvPath string, query url.Values, access_level string) Response {
 		}
 	}
 
+	//primary key detection
+	for i := range rows[0] {
+		if strings.HasPrefix(rows[0][i], "$") {
+			rows[0][i] = strings.TrimPrefix(rows[0][i], "$")
+			primaryKey = i
+			break
+		}
+	}
+
+	//if primary key is defined, update indexMap
+	if primaryKey != -1 {
+		for i := range rows {
+			if i == 0 {
+				continue
+			}
+			//append the row to the indexMap with the primary key as the key
+			indexMap[rows[i][primaryKey]] = rows[i]
+		}
+	}
+
+	headers = rows[0]
+
 	//if select query, return only selected columns
 	if query.Get("select") != "" && (access_level == "read" || access_level == "") {
 
@@ -66,9 +90,35 @@ func Run(csvPath string, query url.Values, access_level string) Response {
 			}
 		}
 
+		//if where clause is defined and contains only primary key, use whereClause with that row from indexMap
+		if query.Get("where") != "" {
+			for key, value := range query {
+				if key == "where" {
+					value := strings.Split(value[0], ":")
+					if len(value) > 2 && value[0] == rows[0][primaryKey] {
+						row, ok := indexMap[value[2]]
+						if ok {
+							if whereClause(row, query) {
+								result := make(map[string]string)
+								for i, value := range row {
+									if contains(cols, rows[0][i]) {
+										result[rows[0][i]] = value
+									}
+								}
+								return Response{
+									Status: "success",
+									Count:  1,
+									Data:   []map[string]string{result},
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		for i, row := range rows {
 			if i == 0 {
-				headers = row
 				continue
 			}
 			if whereClause(row, query) {
@@ -94,7 +144,6 @@ func Run(csvPath string, query url.Values, access_level string) Response {
 		cols := strings.Split(query.Get("update"), ",")
 		for i, row := range rows {
 			if i == 0 {
-				headers = row
 				continue
 			}
 			if whereClause(row, query) {
@@ -159,7 +208,6 @@ func Run(csvPath string, query url.Values, access_level string) Response {
 		var newRows [][]string
 		for i, row := range rows {
 			if i == 0 {
-				headers = row
 				newRows = append(newRows, row) // Always keep the header
 				continue
 			}
@@ -212,6 +260,7 @@ func whereClause(row []string, query url.Values) bool {
 
 					index := getHeaderIndex(key)
 					if index == -1 {
+						log.Warning("Invalid column name: " + key)
 						return false
 					}
 
