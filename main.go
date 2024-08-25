@@ -100,11 +100,11 @@ func handleRequest(c *gin.Context) {
 }
 
 func loadAPIKeys() {
-	apiKeysJson := os.Getenv("SE_AUTH")
+	apiKeysJson := os.Getenv("AB_AUTH")
 	if apiKeysJson != "" {
 		err := json.Unmarshal([]byte(apiKeysJson), &keys)
 		if err != nil {
-			log.Error("Failed to parse SE_AUTH: " + err.Error())
+			log.Error("Failed to parse AB_AUTH: " + err.Error())
 		}
 
 		for key, value := range keys {
