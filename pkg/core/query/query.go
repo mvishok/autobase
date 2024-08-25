@@ -79,7 +79,13 @@ func Run(csvPath string, query url.Values, access_level string) Response {
 	headers = rows[0]
 
 	//if select query, return only selected columns
-	if query.Get("select") != "" && (access_level == "read" || access_level == "") {
+	if query.Get("select") != "" {
+		if access_level != "read" && access_level != "" {
+			return Response{
+				Status: "ClientError",
+				Error:  "Unauthorized",
+			}
+		}
 
 		cols := strings.Split(query.Get("select"), ",")
 
@@ -140,7 +146,13 @@ func Run(csvPath string, query url.Values, access_level string) Response {
 	}
 
 	//if update query, update the rows
-	if query.Get("update") != "" && (access_level == "write" || access_level == "") {
+	if query.Get("update") != "" {
+		if access_level != "write" && access_level != "" {
+			return Response{
+				Status: "ClientError",
+				Error:  "Unauthorized",
+			}
+		}
 		cols := strings.Split(query.Get("update"), ",")
 		for i, row := range rows {
 			if i == 0 {
@@ -186,7 +198,13 @@ func Run(csvPath string, query url.Values, access_level string) Response {
 	}
 
 	//if insert query, insert a new row
-	if query.Get("insert") != "" && (access_level == "write" || access_level == "") {
+	if query.Get("insert") != "" {
+		if access_level != "write" && access_level != "" {
+			return Response{
+				Status: "ClientError",
+				Error:  "Unauthorized",
+			}
+		}
 		newRow := strings.Split(query.Get("insert"), ",")
 		if len(newRow) != len(rows[0]) {
 			log.Error("Invalid number of columns")
@@ -204,7 +222,14 @@ func Run(csvPath string, query url.Values, access_level string) Response {
 	}
 
 	//if delete query, delete the rows
-	if query.Get("delete") == "true" && (access_level == "write" || access_level == "") {
+	if query.Get("delete") == "true" {
+		if access_level != "write" && access_level != "" {
+			return Response{
+				Status: "ClientError",
+				Error:  "Unauthorized",
+			}
+		}
+
 		var newRows [][]string
 		for i, row := range rows {
 			if i == 0 {

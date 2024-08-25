@@ -124,10 +124,35 @@ func keyAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		//find length of read and write keys
+		readKeys := 0
+		writeKeys := 0
+		for _, value := range keys {
+			if value == "read" {
+				readKeys++
+			} else if value == "write" {
+				writeKeys++
+			}
+		}
+
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
+		if readKeys > 0 && writeKeys > 0 && authHeader == "" {
 			c.JSON(401, gin.H{"error": "Authorization header required"})
 			c.Abort()
+			return
+		}
+
+		// if no read keys specified, it means read doesn't require auth
+		if readKeys == 0 && writeKeys > 0 && authHeader == "" {
+			c.Set("access_level", "read")
+			c.Next()
+			return
+		}
+
+		// if no write keys specified, it means write doesn't require auth
+		if writeKeys == 0 && readKeys > 0 && authHeader == "" {
+			c.Set("access_level", "write")
+			c.Next()
 			return
 		}
 
