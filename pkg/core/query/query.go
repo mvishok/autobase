@@ -101,7 +101,7 @@ func Run(csvPath string, query url.Values, access_level string) Response {
 			for key, value := range query {
 				if key == "where" {
 					value := strings.Split(value[0], ":")
-					if len(value) > 2 && value[0] == rows[0][primaryKey] {
+					if len(value) > 2 && primaryKey != -1 && value[0] == rows[0][primaryKey] {
 						row, ok := indexMap[value[2]]
 						if ok {
 							if whereClause(row, query) {
