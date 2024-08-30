@@ -4,7 +4,11 @@
 
 ### License
 
-Distributed under the MIT License. See [MIT License](https://github.com/mvishok/autobase?tab=MIT-1-ov-file) for more information.
+Distributed under the MIT License. See [AGPL-3.0 License](https://github.com/mvishok/autobase?tab=AGPL-3.0-1-ov-file#readme) for more information.
+
+### Version
+
+The current documentation is for `version 1.0.0` of Autobase.
 
 ### Contact
 
