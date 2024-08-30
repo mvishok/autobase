@@ -37,14 +37,14 @@ The `env` property specifies the path to the environment file. The environment f
 
 # Authentication
 
-Autobase supports basic authentication. You can specify the authentication token in your system environment variables. The environment variable should be named `SE_AUTH`. The `SE_AUTH` environment variable should contain A JSON object with `key` and `access_level` pairs.
+Autobase supports basic authentication. You can specify the authentication token in your system environment variables. The environment variable should be named `AB_AUTH`. The `AB_AUTH` environment variable should contain A JSON object with `key` and `access_level` pairs.
 
 ### Example
 ```env
-SE_AUTH={"MyKEY1":"read","MyTOKEN2":"write"}
+AB_AUTH={"MyKEY1":"read","MyTOKEN2":"write"}
 ```
 
-If authentication is enabled, the client must send the `Authorization` header with the value `Bearer <key>` in the request. The key should be one of the keys specified in the `SE_AUTH` environment variable, and the requested operation should be allowed for that key.
+If authentication is enabled, the client must send the `Authorization` header with the value `Bearer <key>` in the request. The key should be one of the keys specified in the `AB_AUTH` environment variable, and the requested operation should be allowed for that key.
 
 ### Access Levels
 
@@ -52,4 +52,4 @@ If authentication is enabled, the client must send the `Authorization` header wi
 - `write`: Allows the client to write data to the server.
 
 >[!ATTENTION]
-> If the `SE_AUTH` environment variable is not set, the server will not require authentication.
+> If the `AB_AUTH` environment variable is not set, the server will not require authentication.
