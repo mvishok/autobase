@@ -4,3 +4,4 @@
 * [Configuration](/configuration/)
 * [Data Sources](/data-sources/)
 * [Data Operations](/data-operations/)
+* [Indexes](/indexes/)
